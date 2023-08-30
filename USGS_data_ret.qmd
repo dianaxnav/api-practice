@@ -1,0 +1,62 @@
+---
+title: "API_practice"
+format: html
+editor: visual
+---
+
+## USGS Data retrieval
+
+```{r}
+library(tidyverse)
+library(dataRetrieval)
+library(metajam)
+```
+
+```{r}
+
+siteNumber <- "11118500"
+parameterCd <- "00060"
+startDate <- "2023-08-19"
+endDate <- "2023-08-22"
+
+discharge <- readNWISdv(siteNumber, parameterCd, startDate, endDate)
+```
+
+```{r}
+ggplot(data = discharge, aes(x = X_00060_00003, y = Date)) +
+  geom_jitter() +
+  labs(title = "Ventura stream data", y = "Date", x = "Discharge(ft^3/sec)")
+```
+
+```{r}
+max(discharge$X_00060_00003)
+```
+
+## Metajam
+
+```{r}
+url <- "https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3A7fc6f6db-c5ea-426a-a743-1f2edafb43b8"
+
+local_path <- "."
+
+download_d1_data(url, local_path)
+```
+
+```{r}
+ak_household_data <- read_d1_files("doi_10.5063_F1N58JPP__household_language__csv/")
+```
+
+```{r}
+data <- ak_household_data$data
+```
+
+```{r}
+#compute the percentage of Alaskan household speaking only English from 2009 to 2015
+
+new_d <- data %>% 
+  filter(Year %in% c(2009:2015)) %>% 
+  filter(SASAP.Region == "Alaska Peninsula and Aleutian Islands") %>% 
+  select(speak_only_english, total, city, Year) %>% 
+  mutate(only_english_percent = (speak_only_english / total) *100)
+
+```
